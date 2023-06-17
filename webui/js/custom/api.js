@@ -36,7 +36,7 @@ window.checkUser = function(form) {
         crossDomain: true,
         success: function(response) {
 			console.log(response);
-        	window.location.href = '/dashboard.html';
+        	window.location.href = '/html/expense.html';
         },
         error: function(xhr, status, error) {
 			// Handle login error
