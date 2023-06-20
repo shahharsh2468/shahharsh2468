@@ -169,7 +169,8 @@
           <tr>
             <th>Expense ID</th>
             <th>Vendor Name</th>
-            <th>Amount</th>
+            <th>credit</th>
+            <th>debit</th>
             <th>Date</th>
             <th>Description</th>
           </tr>
@@ -229,15 +230,17 @@
 
         // Send AJAX request to add expense API
         $.ajax({
-          url: 'api/expense',
+          url: 'http://localhost:3000/expenses',
           method: 'POST',
           data: {
-            vendorName: vendorName,
+            user_id: "648d7e864df4e09bb9f6c04f",
+            vendor_name: vendorName,
             amount: amount,
             date: date,
             description: description
           },
           success: function (response) {
+            console.log(response);
             // Close modal
             $('#modal').css('display', 'none');
 
@@ -249,11 +252,11 @@
 
             // Add new expense row to the table
             var newRow = '<tr>' +
-              '<td>' + response.expenseId + '</td>' +
-              '<td>' + response.vendorName + '</td>' +
-              '<td>' + response.amount + '</td>' +
-              '<td>' + response.date + '</td>' +
-              '<td>' + response.description + '</td>' +
+              '<td>' + response.data.expense_id + '</td>' +
+              '<td>' + response.data.vendor_name + '</td>' +
+              '<td>' + response.data.amount + '</td>' +
+              '<td>' + response.data.date + '</td>' +
+              '<td>' + response.data.description + '</td>' +
               '</tr>';
             $('#expense-table tbody').append(newRow);
 
