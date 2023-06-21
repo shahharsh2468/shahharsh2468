@@ -14,7 +14,11 @@ const expenseSchema = new mongoose.Schema({
     date : {
         type: Date
     },
-    amount : {
+    credit : {
+        type: Number,
+        default: 0
+    },
+    debit : {
         type: Number,
         default: 0
     },

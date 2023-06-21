@@ -38,6 +38,10 @@
       z-index: 999;
     }
 
+    .d-none{
+      display: none;
+    }
+
     .modal {
       display: none;
       position: fixed;
@@ -167,10 +171,10 @@
       <table id="expense-table">
         <thead>
           <tr>
-            <th>Expense ID</th>
+            <!-- <th>Expense ID</th> -->
             <th>Vendor Name</th>
-            <th>credit</th>
-            <th>debit</th>
+            <th>Credit</th>
+            <th>Debit</th>
             <th>Date</th>
             <th>Description</th>
           </tr>
@@ -185,15 +189,25 @@
       <div class="modal-content">
         <div class="close-btn"></div>
         <h2>Add Expense</h2>
-        <form id="expense-form">
+        <form id="expense-form" action="#">
           <label for="vendor-name">Vendor Name:</label>
           <input type="text" id="vendor-name" required><br><br>
-          <label for="amount">Amount:</label>
-          <input type="number" id="amount" required><br><br>
+          <label for="credit-debit">Credit/Debit:</label>
+          <select id="credit-debit" required>
+            <option value="" selected>Select Type</option>
+            <option value="credit">Credit</option>
+            <option value="debit">Debit</option>
+            <option value="both">Credit-Debit</option>
+          </select><br><br>
+          <label for="credit" class="d-none" id="credit-label">Credit:</label>
+          <input type="text" id="credit" class="d-none"><br><br>
+          <label for="debit" class="d-none" id="debit-label">Debit:</label>
+          <input type="text" id="debit" class="d-none"><br><br>
           <label for="date">Date:</label>
           <input type="date" id="date" required><br><br>
           <label for="description">Description:</label>
           <textarea id="description" required></textarea><br><br>
+          <br><br>
           <button type="submit">Add</button>
         </form>
       </div>
@@ -201,17 +215,42 @@
   </div>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.0.1/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.html5.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.print.min.js"></script>
   <script>
     $(document).ready(function () {
-      // DataTable initialization
-      $('#expense-table').DataTable({
-        responsive: true
-      });
 
       // Open modal on click of + icon
       $('.add-expense-btn').click(function () {
         $('#modal').css('display', 'block');
       });
+
+      $('#credit-debit').change(function(){
+        var val = $('#credit-debit').val();
+        if(val == 'credit'){
+          $('#credit').removeClass('d-none');
+          $('#credit-label').removeClass('d-none');
+          $('#debit').addClass('d-none');
+          $('#debit-label').addClass('d-none');
+        } else if(val == 'debit'){
+          $('#debit').removeClass('d-none');
+          $('#debit-label').removeClass('d-none');
+          $('#credit').addClass('d-none');
+          $('#credit-label').addClass('d-none');
+        } else if(val == 'both'){
+          $('#credit-label').removeClass('d-none');
+          $('#debit-label').removeClass('d-none');
+          $('#credit').removeClass('d-none');
+          $('#debit').removeClass('d-none');
+        } else {
+          $('#credit').addClass('d-none');
+          $('#debit').addClass('d-none');
+          $('#credit-label').addClass('d-none');
+          $('#debit-label').addClass('d-none');
+        }
+      })
 
       // Close modal on click of close button
       $('.close-btn').click(function () {
@@ -224,10 +263,19 @@
 
         // Get form values
         var vendorName = $('#vendor-name').val();
-        var amount = $('#amount').val();
         var date = $('#date').val();
         var description = $('#description').val();
-
+        if($('#credit').val() != ''){
+          var credit = $('#credit').val();
+        } else {
+          var credit = 0;
+        }
+        if($('#debit').val() != ''){
+          var debit = $('#debit').val();
+        } else {
+          var debit = 0;
+        }
+        
         // Send AJAX request to add expense API
         $.ajax({
           url: 'http://localhost:3000/expenses',
@@ -235,42 +283,74 @@
           data: {
             user_id: "648d7e864df4e09bb9f6c04f",
             vendor_name: vendorName,
-            amount: amount,
             date: date,
-            description: description
+            description: description,
+            credit: credit,
+            debit: debit
           },
           success: function (response) {
             console.log(response);
             // Close modal
             $('#modal').css('display', 'none');
-
-            // Clear form fields
-            $('#vendor-name').val('');
-            $('#amount').val('');
-            $('#date').val('');
-            $('#description').val('');
-
-            // Add new expense row to the table
-            var newRow = '<tr>' +
-              '<td>' + response.data.expense_id + '</td>' +
-              '<td>' + response.data.vendor_name + '</td>' +
-              '<td>' + response.data.amount + '</td>' +
-              '<td>' + response.data.date + '</td>' +
-              '<td>' + response.data.description + '</td>' +
-              '</tr>';
-            $('#expense-table tbody').append(newRow);
-
-            // Refresh DataTable
-            $('#expense-table').DataTable().destroy();
-            $('#expense-table').DataTable({
-              responsive: true
-            });
+            location.reload();
           },
           error: function (xhr, status, error) {
             // Handle error
             console.log(error);
+            alert(error);
           }
         });
+      });
+
+      var user_id = '648d7e864df4e09bb9f6c04f';
+      // Get all expenses and show them in the table
+      $.ajax({
+        url: 'http://localhost:3000/expenses?user_id='+user_id,
+        method: 'GET',
+        success: function (response) {
+          console.log(response);
+          if(response.data){
+            if(Object.keys(response.data).length > 0){
+              var expenses = response.data;
+              var html = '';
+              for (var i = 0; i < expenses.length; i++) {
+                var expense = expenses[i];
+                var date = expense.date.split('T');
+                html += '<tr>';
+                  // html += '<td>' + expense.expense_id + '</td>';
+                  html += '<td>' + expense.vendor_name + '</td>';
+                  if(expense.credit == 0){
+                    html += '<td style="text-align: center;">-</td>';
+                  } else {
+                    html += '<td style="background-color: forestgreen;text-align: right;color: floralwhite;">' + expense.credit + '</td>';
+                  }
+                  if(expense.debit == 0){
+                    html += '<td style="text-align: center;">-</td>';
+
+                  } else {
+                    html += '<td style="text-align: right;background-color: #b22323;color: ghostwhite;">'+ expense.debit +'</td>';
+                  }
+                  html +='<td>' + date[0] + '</td>';
+                  html += '<td>' + expense.description + '</td>';
+                html += '</tr>';
+              }
+              $('#expense-table tbody').html(html);
+            }
+          }
+                  
+          // Initialize DataTable
+          $('#expense-table').DataTable({
+            responsive: true,
+            dom: 'Bfrtip',
+            buttons: [
+              'excel', 'pdf', 'print'
+            ]
+          });
+        },
+        error: function (xhr, status, error) {
+          // Handle error
+          console.log(error);
+        }
       });
     });
   </script>

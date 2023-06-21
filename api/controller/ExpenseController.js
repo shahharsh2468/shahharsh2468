@@ -29,12 +29,23 @@ app.post("/expenses",async(req,res)=> {
 
 app.get("/expenses",async(req,res)=> {
     try{
+        res.setHeader('Access-Control-Allow-Origin', '*');
+
+        // Request methods you wish to allow
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+
+        // Request headers you wish to allow
+        res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+
+        // Set to true if you need the website to include cookies in the requests sent
+        // to the API (e.g. in case you use sessions)
+        res.setHeader('Access-Control-Allow-Credentials', true);
         const user_id = req.query.user_id;
-        const Expenses = await Expenses.find({"user_id":user_id});
-        if(Object.keys(Expenses).length == 0){
+        const expense = await Expenses.find({"user_id":user_id});
+        if(Object.keys(expense).length == 0){
             return response.message(res,200,"SUCCESS",'No Data Available'); //if there is no content in body then this error will generate
         }
-        response.message(res,200,"SUCCESS",'Expense fetched successfully',Expenses); //successfully created new customer
+        response.message(res,200,"SUCCESS",'Expense fetched successfully',expense); //successfully created new customer
     } catch(e) {
         response.error400(e,res);
     }
