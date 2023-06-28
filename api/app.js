@@ -1,4 +1,5 @@
 // require('dotenv').config();
+// const port = process.env.PORT;
 const express = require("express");
 const db = require("./database/conn");
 const bodyParser = require('body-parser');
@@ -21,7 +22,7 @@ app.use((req, res, next) => {
     next();
   });
 app.use(express.static('public'));
-// app.use(express.json());
+app.use(express.json());
 
 app.listen(port, () => {
     console.log(`connection is setup at ${port}`);
