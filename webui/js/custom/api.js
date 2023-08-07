@@ -38,6 +38,7 @@ window.checkUser = function(form) {
         crossDomain: true,
         success: function(response) {
 			console.log(response);
+			$('#user_id').val(response.data.user_id);
         	window.location.href = site_url+'/webui/html/expense.html';
         },
         error: function(xhr, status, error) {
