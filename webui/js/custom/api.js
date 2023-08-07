@@ -1,3 +1,5 @@
+window.site_url = 'https://shahharsh2468.github.io/shahharsh2468/';
+
 $(document).ready(function(){
 
     $('#login-form').validate({
@@ -36,7 +38,7 @@ window.checkUser = function(form) {
         crossDomain: true,
         success: function(response) {
 			console.log(response);
-        	window.location.href = '/webui/html/expense.html';
+        	window.location.href = site_url+'/webui/html/expense.html';
         },
         error: function(xhr, status, error) {
 			// Handle login error
